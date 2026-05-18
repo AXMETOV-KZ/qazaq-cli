@@ -12,6 +12,14 @@
   },
   "keywords": ["cli", "ai", "agent", "qazaq", "mimo", "tui", "chat", "code", "git", "search"],
   "author": "Axmetov.S",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AXMETOV-KZ/qazaq-cli.git"
+  },
+  "homepage": "https://github.com/AXMETOV-KZ/qazaq-cli",
+  "bugs": {
+    "url": "https://github.com/AXMETOV-KZ/qazaq-cli/issues"
+  },
   "license": "MIT",
   "type": "module",
   "engines": {
