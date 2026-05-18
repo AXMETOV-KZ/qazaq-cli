@@ -1,6 +1,6 @@
 {
   "name": "qazaq-cli",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Qazaq CLI — AI agent with TUI chat, web search, shell execution, file operations, and 15 slash commands",
   "main": "src/index.js",
   "bin": {
@@ -10,7 +10,18 @@
     "start": "node bin/index.js",
     "tui": "node bin/index.js tui"
   },
-  "keywords": ["cli", "ai", "agent", "qazaq", "mimo", "tui", "chat", "code", "git", "search"],
+  "keywords": [
+    "cli",
+    "ai",
+    "agent",
+    "qazaq",
+    "mimo",
+    "tui",
+    "chat",
+    "code",
+    "git",
+    "search"
+  ],
   "author": "Axmetov.S",
   "repository": {
     "type": "git",
