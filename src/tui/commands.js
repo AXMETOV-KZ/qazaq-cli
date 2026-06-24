@@ -373,7 +373,7 @@ function cmdAgent() {
     '',
     '  - Kod jazu, oqy, tuzetu',
     '  - Faylldarmen jumys (oqy, jazú, izdeý)',
-    '  - Shell komandalary (build, test, git)',
+     '  - Shell pärmenderi (build, test, git)',
     '  - Internette izdeý, saibandy oqy',
     '  - Paketter ornatý (npm, pip, apt)',
     '  - Git operaciyalary (commit, push, diff)',

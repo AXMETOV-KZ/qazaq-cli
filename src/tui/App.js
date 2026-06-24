@@ -62,6 +62,12 @@ export default function App() {
   const [cursorPos, setCursorPos] = useState(0);
   const [menuIndex, setMenuIndex] = useState(0);
   const [pastes, setPastes] = useState([]);
+  const [cursorOn, setCursorOn] = useState(true);
+
+  useEffect(() => {
+    const t = setInterval(() => setCursorOn(v => !v), 500);
+    return () => clearInterval(t);
+  }, []);
 
   // Paste detection refs
   const pasteBuffer = useRef('');
@@ -203,7 +209,8 @@ export default function App() {
       return;
     }
 
-    // Arrows
+    // Arrows (outside menu — move cursor or ignore)
+    if (key.upArrow || key.downArrow) return;
     if (key.leftArrow) {
       setCursorPos(prev => Math.max(0, prev - 1));
       return;
@@ -219,11 +226,11 @@ export default function App() {
       return;
     }
 
-    // Skip Ctrl combos
+    // Skip Ctrl/meta combos
     if (key.ctrl || key.meta) return;
 
-    // Normal char
-    if (inputChar) {
+    // Normal printable char (filter control sequences like ESC[B from arrow keys)
+    if (inputChar && !/[\x00-\x1f\x7f]/.test(inputChar)) {
       setInput(prev => prev.slice(0, cursorPos) + inputChar + prev.slice(cursorPos));
       setCursorPos(prev => prev + 1);
       setMenuIndex(0);
@@ -316,7 +323,7 @@ export default function App() {
           )
       ),
       React.createElement(Box, { marginTop: 0 },
-        React.createElement(Text, { dimColor: true }, 'ESC — shuǵy | Enter — jiberu | / — komandalar')
+        React.createElement(Text, { dimColor: true }, 'ESC — shygu | Enter — tańdau | / — pärmender')
       )
     ),
 
@@ -326,7 +333,7 @@ export default function App() {
     // Messages
     React.createElement(Box, { flexDirection: 'column', paddingX: 1, flexGrow: 1 },
       messages.length === 0
-        ? React.createElement(Text, { dimColor: true }, '\n  Soylesýdi bastanyz...\n')
+        ? React.createElement(Text, { color: YELLOW }, '\n  Terip jaz\n')
         : messages.map((msg, i) =>
           React.createElement(Box, { key: i, flexDirection: 'column', marginBottom: 0 },
             msg.role === 'user'
@@ -361,11 +368,11 @@ export default function App() {
     // Input field
     React.createElement(Box, { borderStyle: 'single', borderBottom: true, borderTop: false, borderLeft: false, borderRight: false, borderColor: YELLOW }),
     React.createElement(Box, { paddingX: 1, paddingBottom: 0, paddingTop: 0 },
-      React.createElement(Text, { color: CYAN, bold: true }, '  ▸ '),
+      React.createElement(Text, { color: YELLOW, bold: true }, '  > '),
       input.length > 0
         ? React.createElement(Text, null, displayInput)
         : React.createElement(Text, { dimColor: true }, 'terý...'),
-      React.createElement(Text, { color: CYAN }, '▌')
+      React.createElement(Text, { color: YELLOW }, cursorOn ? '▋' : ' ')
     ),
     React.createElement(Box, { borderStyle: 'single', borderBottom: false, borderTop: true, borderLeft: false, borderRight: false, borderColor: YELLOW, marginBottom: 1 })
   );
