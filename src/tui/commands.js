@@ -2,6 +2,7 @@ import { readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig, saveConfig } from '../utils/config.js';
+import { listProviders, listModels, getActiveProviderId } from '../providers/index.js';
 
 // Рабочий каталог (можно расширять через /qosu)
 let workingDirs = [process.cwd()];
@@ -47,6 +48,12 @@ export async function handleSlashCommand(input, context) {
 
     case '/baptau':
       return cmdBaptau(args);
+
+    case '/provider':
+      return cmdProvider();
+
+    case '/model':
+      return cmdModel();
 
     case '/qosu':
       return cmdQosu(args);
@@ -99,6 +106,8 @@ function cmdKomek() {
     '  /qysqa       Qysqasha rejim (AI jauap qysqartý)',
     '  /tez         Jyldam rejim',
     '  /baptau      Baptaulardy kórsetu / ózgertu',
+    '  /provider    Provaiderdi tańdau (menú)',
+    '  /model       Provaider modelin tańdau (menú)',
     '  /qosu        Jumys katalogyn qosý',
     '  /agentter    AI agent basqarý',
     '  /butaq       Dialogty butaqttau',
@@ -171,6 +180,47 @@ function cmdBaptau(args) {
   const value = argStr.slice(eqIdx + 1).trim();
   saveConfig({ [key]: value });
   return { handled: true, message: `  Saqtaldy: ${key} = ${value}`, skipAI: true };
+}
+
+// === /provider — Provaiderdi tańdau (menú) ===
+function cmdProvider() {
+  const cfg = loadConfig();
+  const active = cfg.provider || 'openai';
+  const items = listProviders().map(p => ({
+    label: `${p.name}${p.id === active ? '  ✓' : ''}`,
+    value: p.id,
+    hint: p.defaultModel || '',
+  }));
+  return {
+    handled: true,
+    skipAI: true,
+    picker: { type: 'provider', title: ' Provaider tańda:', items },
+  };
+}
+
+// === /model — Provaider modelin tańdau (menú) ===
+function cmdModel() {
+  const id = getActiveProviderId();
+  const cfg = loadConfig();
+  const activeModel = cfg[`${id}.model`] || '';
+  const models = listModels(id);
+  if (models.length === 0) {
+    return {
+      handled: true,
+      skipAI: true,
+      message: ` "${id}" ushın model tizimi joq. Qoldaný: /baptau ${id}.model=...`,
+    };
+  }
+  const items = models.map(m => ({
+    label: `${m}${m === activeModel ? '  ✓' : ''}`,
+    value: m,
+    hint: '',
+  }));
+  return {
+    handled: true,
+    skipAI: true,
+    picker: { type: 'model', provider: id, title: ` Model tańda (${id}):`, items },
+  };
 }
 
 // === /qosu — Jumys katalogyn qosu ===

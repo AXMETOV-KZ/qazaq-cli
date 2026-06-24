@@ -2,7 +2,7 @@
 // Провайдер фабрикасы. getClient() — бұрынғымен бірдей { client, info } қайтарады,
 // сондықтан ask.js / chat.js / agent.js өзгеріссіз жұмыс істейді.
 import OpenAI from 'openai';
-import { PROVIDERS, DEFAULT_PROVIDER } from './registry.js';
+import { PROVIDERS, DEFAULT_PROVIDER, MODELS } from './registry.js';
 import { loadConfig } from '../utils/config.js';
 
 // Провайдерге қатысты конфиг кілттері — жалаң нүктелі жолдар, мыс. "openai.apiKey".
@@ -83,4 +83,14 @@ export function listProviders() {
 	}));
 }
 
-export { PROVIDERS, DEFAULT_PROVIDER } from './registry.js';
+export function getActiveProviderId() {
+	const cfg = loadConfig();
+	return cfg.provider || process.env.QAZAQ_PROVIDER || DEFAULT_PROVIDER;
+}
+
+export function listModels(providerId) {
+	const id = providerId || getActiveProviderId();
+	return MODELS[id] || [];
+}
+
+export { PROVIDERS, DEFAULT_PROVIDER, MODELS } from './registry.js';

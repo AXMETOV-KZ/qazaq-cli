@@ -67,3 +67,28 @@ export const PROVIDERS = {
 };
 
 export const DEFAULT_PROVIDER = 'openai';
+
+// Провайдер бойынша танымал модельдер (/model менюінде көрсетіледі).
+// Тізімді еркін кеңейтуге болады; custom үшін /baptau арқылы қолмен енгізіледі.
+export const MODELS = {
+	openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1', 'gpt-4.1-mini', 'o3-mini'],
+	openrouter: [
+		'openai/gpt-4o-mini',
+		'anthropic/claude-3.5-sonnet',
+		'google/gemini-2.0-flash-exp',
+		'meta-llama/llama-3.3-70b-instruct',
+		'deepseek/deepseek-chat',
+	],
+	groq: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'],
+	deepseek: ['deepseek-chat', 'deepseek-reasoner'],
+	together: [
+		'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+		'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
+		'Qwen/Qwen2.5-72B-Instruct-Turbo',
+	],
+	mistral: ['mistral-large-latest', 'mistral-small-latest', 'codestral-latest'],
+	xai: ['grok-2-latest', 'grok-2-vision-latest', 'grok-beta'],
+	gemini: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+	ollama: ['llama3.1', 'llama3.2', 'qwen2.5-coder', 'mistral', 'gemma2'],
+	custom: [],
+};
