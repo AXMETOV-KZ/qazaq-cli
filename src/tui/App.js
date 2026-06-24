@@ -76,17 +76,18 @@ export default function App() {
 
   const [provider, setProvider] = useState(null);
 
-  useEffect(() => {
-    async function loadProvider() {
-      try {
-        const { getClient } = await import('../providers/index.js');
-        const { info } = getClient();
-        setProvider(info);
-      } catch (e) {
-        setProvider({ name: 'model tandalmagan', defaultModel: '', error: true });
-      }
+  async function refreshProvider() {
+    try {
+      const { getClient } = await import('../providers/index.js');
+      const { info } = getClient();
+      setProvider(info);
+    } catch (e) {
+      setProvider({ name: 'modelindi tandawiw…', defaultModel: '', error: true });
     }
-    loadProvider();
+  }
+
+  useEffect(() => {
+    refreshProvider();
   }, []);
 
   // === RAW STDIN PASTE INTERCEPTION ===
@@ -248,6 +249,7 @@ export default function App() {
         if (result.message) {
           setMessages(prev => [...prev, { role: 'system', content: result.message }]);
         }
+        await refreshProvider();
         return;
       }
       if (result.rewritten) {
@@ -262,6 +264,7 @@ export default function App() {
     try {
       const { getClient } = await import('../providers/index.js');
       const { client, info } = getClient();
+      setProvider(info);
 
       const agent = new Agent({
         client,
@@ -304,13 +307,13 @@ export default function App() {
         React.createElement(Text, { dimColor: true }, '  Build by KazakBot')
       ),
       React.createElement(Box, { marginTop: 0 },
-        React.createElement(Text, { dimColor: true },
-          provider
-            ? (provider.error
-              ? provider.name
-              : `[${provider.name}] ${provider.defaultModel}${isCompactMode() ? ' [qysqa]' : ''}`)
-            : 'Júktelude...'
-        )
+        provider && provider.error
+          ? React.createElement(Text, { color: YELLOW, bold: true }, provider.name)
+          : React.createElement(Text, { dimColor: true },
+            provider
+              ? `[${provider.name}] ${provider.defaultModel}${isCompactMode() ? ' [qysqa]' : ''}`
+              : 'Júktelude...'
+          )
       ),
       React.createElement(Box, { marginTop: 0 },
         React.createElement(Text, { dimColor: true }, 'ESC — shuǵy | Enter — jiberu | / — komandalar')
