@@ -38,11 +38,11 @@ export async function askCommand(question, options) {
     if (error.message.includes('terminated') || error.message.includes('ECONNRESET')) {
       console.log(formatError('Байланыс үзілді'));
       console.log(chalk.yellow('💡 Қайта көріңіз не провайдерді ауыстырыңыз:'));
-      console.log(chalk.gray('   qazaq config --set provider=mimo'));
-    } else if (error.message.includes('MIMO_API_KEY')) {
-      console.log(formatError('MiMo үшін API-кілт керек'));
+      console.log(chalk.gray('   qazaq config --set provider=openai'));
+    } else if (error.message.includes('API key')) {
+      console.log(formatError('API-кілт керек'));
       console.log(chalk.yellow('💡 Кілтті орнатыңыз:'));
-      console.log(chalk.gray('   qazaq config --set mimoApiKey=КІЛТІҢІЗ'));
+      console.log(chalk.gray('   qazaq config --set <provider>.apiKey=КІЛТІҢІЗ'));
     } else if (error.message.includes('fetch failed')) {
       console.log(formatError('Интернет жоқ не сервер қол жетімсіз'));
       console.log(chalk.yellow('💡 Интернет байланысын тексеріңіз'));

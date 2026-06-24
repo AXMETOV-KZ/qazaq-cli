@@ -134,17 +134,6 @@ function cmdQysqa() {
 
 // === /tez — Jyldam rejim ===
 function cmdTez(context) {
-  const cfg = loadConfig();
-  const currentProvider = cfg.provider || 'gateway';
-
-  if (currentProvider === 'gateway') {
-    return {
-      handled: true,
-      message: '  Jyldam rejim: Gateway providerinde qol jetimdi.\n  Model auystyrylmaydy (tek bir model bar).',
-      skipAI: true
-    };
-  }
-
   return {
     handled: true,
     message: '  Jyldam rejim qosyldy. Jauaptar tezirek bolady.',
@@ -168,7 +157,7 @@ function cmdBaptau(args) {
     }
     lines.push('');
     lines.push('  Qoldaný: /baptau <key>=<value>');
-    lines.push('  Mysalý: /baptau provider=mimo');
+    lines.push('  Mysalý: /baptau provider=openai');
     return { handled: true, message: lines.join('\n'), skipAI: true };
   }
 

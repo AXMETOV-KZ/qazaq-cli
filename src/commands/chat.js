@@ -78,9 +78,9 @@ export async function chatCommand(options) {
         console.log(formatError('Байланыс үзілді'));
         console.log(chalk.yellow('💡 Қайта көріп жатыр...'));
         messages.pop();
-      } else if (error.message.includes('MIMO_API_KEY')) {
-        console.log(formatError('MiMo үшін API-кілт керек'));
-        console.log(chalk.gray('   qazaq config --set mimoApiKey=КІЛТІҢІЗ'));
+      } else if (error.message.includes('API key')) {
+        console.log(formatError('API-кілт керек'));
+        console.log(chalk.gray('   qazaq config --set <provider>.apiKey=КІЛТІҢІЗ'));
         messages.pop();
       } else {
         console.log(formatError(error.message));

@@ -17,7 +17,7 @@
 - **Git Integration** — commit, push, pull, diff, branch
 - **Package Management** — install packages (npm, pip, apt, brew)
 - **15 Slash Commands** — Kazakh-language commands in TUI
-- **Dual Providers** — Gitlawb Gateway (free) and Xiaomi MiMo
+- **10+ Providers** — OpenAI, OpenRouter, Groq, DeepSeek, Together, Mistral, xAI, Gemini, Ollama, Custom
 
 ## Installation
 
@@ -49,20 +49,32 @@ qazaq explain src/utils/
 
 ## Providers
 
-| Provider | URL | Auth | Default Model |
-|----------|-----|------|---------------|
-| **Gitlawb Gateway** | `opengateway.gitlawb.com` | Free, no key | `mimo-v2.5-pro` |
-| **Xiaomi MiMo** | `api.xiaomimimo.com` | `MIMO_API_KEY` | `mimo-v2.5-pro` |
+| Provider | Env Key | Default Model |
+|----------|---------|---------------|
+| **OpenAI** | `OPENAI_API_KEY` | `gpt-4o-mini` |
+| **OpenRouter** | `OPENROUTER_API_KEY` | `openai/gpt-4o-mini` |
+| **Groq** | `GROQ_API_KEY` | `llama-3.3-70b-versatile` |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | `deepseek-chat` |
+| **Together AI** | `TOGETHER_API_KEY` | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
+| **Mistral** | `MISTRAL_API_KEY` | `mistral-large-latest` |
+| **xAI Grok** | `XAI_API_KEY` | `grok-2-latest` |
+| **Google Gemini** | `GEMINI_API_KEY` | `gemini-2.0-flash` |
+| **Ollama (local)** | — | `llama3.1` |
+| **Custom** | `QAZAQ_API_KEY` | — |
 
 ### Configuration
 
 ```bash
 # Set provider
-qazaq config --set provider=gateway
-qazaq config --set provider=mimo
+qazaq config --set provider=openai
+qazaq config --set openai.apiKey=sk-...
+qazaq config --set openai.model=gpt-4o
 
-# Set API key for MiMo
-qazaq config --set mimoApiKey=YOUR_KEY
+# Custom endpoint
+qazaq config --set provider=custom
+qazaq config --set custom.baseURL=https://your-endpoint/v1
+qazaq config --set custom.apiKey=your-key
+qazaq config --set custom.model=your-model
 
 # View settings
 qazaq config --list
@@ -130,9 +142,16 @@ qazaq
 
 | Variable | Description |
 |----------|-------------|
-| `QAZAQ_PROVIDER` | Default provider (`gateway` or `mimo`) |
+| `QAZAQ_PROVIDER` | Default provider (e.g. `openai`, `groq`, `deepseek`) |
 | `QAZAQ_MODEL` | Default model name |
-| `MIMO_API_KEY` | API key for Xiaomi MiMo |
+| `OPENAI_API_KEY` | API key for OpenAI |
+| `OPENROUTER_API_KEY` | API key for OpenRouter |
+| `GROQ_API_KEY` | API key for Groq |
+| `DEEPSEEK_API_KEY` | API key for DeepSeek |
+| `TOGETHER_API_KEY` | API key for Together AI |
+| `MISTRAL_API_KEY` | API key for Mistral |
+| `XAI_API_KEY` | API key for xAI |
+| `GEMINI_API_KEY` | API key for Google Gemini |
 
 ## Project Structure
 
@@ -151,8 +170,7 @@ qazaq_cli/
 │   │   ├── config.js      # Settings management
 │   │   └── files.js       # File operations
 │   ├── providers/
-│   │   ├── gateway.js     # Gitlawb Gateway (native https)
-│   │   ├── mimo.js        # Xiaomi MiMo (OpenAI SDK)
+│   │   ├── registry.js    # Provider definitions
 │   │   └── index.js       # Provider factory
 │   ├── tui/
 │   │   ├── App.js         # TUI chat interface (Ink/React)
@@ -172,8 +190,7 @@ qazaq_cli/
 - **Node.js** 18+ (ES Modules)
 - **Commander.js** — CLI argument parsing
 - **Ink** + **React** — terminal UI
-- **OpenAI SDK** — MiMo provider
-- **Native https** — Gateway provider (no external HTTP lib)
+- **OpenAI SDK** — all providers (OpenAI-compatible API)
 - **Chalk** — terminal colors
 - **Ora** — spinners
 - **Inquirer** — interactive prompts
@@ -194,6 +211,6 @@ MIT © [Axmetov.S](https://github.com/AXMETOV-KZ)
 
 ## Acknowledgments
 
-- [OpenClaude](https://github.com/Gitlawb/openclaude) — inspiration and provider infrastructure
-- [Xiaomi MiMo](https://api.xiaomimimo.com) — AI model
-- [Gitlawb Gateway](https://opengateway.gitlawb.com) — free API gateway
+- [OpenAI](https://openai.com) — API standard
+- [OpenRouter](https://openrouter.ai) — multi-provider gateway
+- [Groq](https://groq.com) — fast inference

@@ -29,8 +29,8 @@ program
   .command('ask')
   .description('AI-ға сұрақ қою')
   .argument('<question>', 'Сұрағыңыз')
-  .option('-p, --provider <provider>', 'Провайдер: gateway | mimo', process.env.QAZAQ_PROVIDER || 'gateway')
-  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL || 'mimo-v2.5-pro')
+  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER)
+  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL)
   .action(async (question, options) => {
     const { askCommand } = await import('./commands/ask.js');
     await askCommand(question, options);
@@ -39,8 +39,8 @@ program
 program
   .command('chat')
   .description('AI-мен интерактивті сөйлесу')
-  .option('-p, --provider <provider>', 'Провайдер: gateway | mimo', process.env.QAZAQ_PROVIDER || 'gateway')
-  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL || 'mimo-v2.5-pro')
+  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER)
+  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL)
   .action(async (options) => {
     const { chatCommand } = await import('./commands/chat.js');
     await chatCommand(options);
@@ -79,8 +79,8 @@ program
   .command('fix')
   .description('AI кодты талдап, түзетеді')
   .argument('<path>', 'Файл жолы')
-  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER || 'gateway')
-  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL || 'mimo-v2.5-pro')
+  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER)
+  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL)
   .action(async (filePath, options) => {
     const { fixFileCommand } = await import('./commands/files.js');
     await fixFileCommand(filePath, options);
@@ -90,8 +90,8 @@ program
   .command('explain')
   .description('AI кодты түсіндіреді')
   .argument('<path>', 'Файл жолы')
-  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER || 'gateway')
-  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL || 'mimo-v2.5-pro')
+  .option('-p, --provider <provider>', 'Провайдер', process.env.QAZAQ_PROVIDER)
+  .option('-m, --model <model>', 'AI моделі', process.env.QAZAQ_MODEL)
   .action(async (filePath, options) => {
     const { explainFileCommand } = await import('./commands/files.js');
     await explainFileCommand(filePath, options);
@@ -102,8 +102,8 @@ program
   .command('agent')
   .description('AI agent — aspaptar men jumys istetedi')
   .argument('[question]', 'Tapsyrma nemese suraq')
-  .option('-p, --provider <provider>', 'Provider: gateway | mimo', process.env.QAZAQ_PROVIDER || 'gateway')
-  .option('-m, --model <model>', 'AI modeli', process.env.QAZAQ_MODEL || 'mimo-v2.5-pro')
+  .option('-p, --provider <provider>', 'Provider', process.env.QAZAQ_PROVIDER)
+  .option('-m, --model <model>', 'AI modeli', process.env.QAZAQ_MODEL)
   .action(async (question, options) => {
     const { agentCommand } = await import('./commands/agent.js');
     await agentCommand(question, options);
