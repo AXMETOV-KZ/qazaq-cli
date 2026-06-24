@@ -1,5 +1,9 @@
 # Qazaq CLI
 
+<p align="center">
+<img src="docs/screenshot.png" alt="Qazaq CLI — TUI" width="800">
+</p>
+
 [![npm version](https://img.shields.io/npm/v/qazaq-cli.svg)](https://www.npmjs.com/package/qazaq-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
