@@ -83,7 +83,7 @@ export default function App() {
         const { info } = getClient();
         setProvider(info);
       } catch (e) {
-        setProvider({ name: 'Error', defaultModel: '' });
+        setProvider({ name: 'model tandalmagan', defaultModel: '', error: true });
       }
     }
     loadProvider();
@@ -301,12 +301,14 @@ export default function App() {
     React.createElement(Box, { flexDirection: 'column', paddingX: 1, paddingTop: 1 },
       React.createElement(QAZAQArt, null),
       React.createElement(Box, { marginTop: 0, marginBottom: 0 },
-        React.createElement(Text, { dimColor: true }, '  Build by Axmetov.S')
+        React.createElement(Text, { dimColor: true }, '  Build by KazakBot')
       ),
       React.createElement(Box, { marginTop: 0 },
         React.createElement(Text, { dimColor: true },
           provider
-            ? `[${provider.name}] ${provider.defaultModel}${isCompactMode() ? ' [qysqa]' : ''}`
+            ? (provider.error
+              ? provider.name
+              : `[${provider.name}] ${provider.defaultModel}${isCompactMode() ? ' [qysqa]' : ''}`)
             : 'Júktelude...'
         )
       ),
