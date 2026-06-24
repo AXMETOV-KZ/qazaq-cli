@@ -93,4 +93,18 @@ export function listModels(providerId) {
 	return MODELS[id] || [];
 }
 
+// Провайдер API-сінен нақты қолжетімді модельдер тізімін алу.
+export async function fetchModels(providerId) {
+	const id = providerId || getActiveProviderId();
+	try {
+		const { client } = getClient(id);
+		const res = await client.models.list();
+		const ids = (res?.data || []).map(m => m.id).filter(Boolean);
+		if (ids.length) return ids.sort().slice(0, 100);
+	} catch {
+		// желі/кілт қатесі → статикалық каталогқа қайтамыз
+	}
+	return MODELS[id] || [];
+}
+
 export { PROVIDERS, DEFAULT_PROVIDER, MODELS } from './registry.js';
