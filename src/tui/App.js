@@ -3,6 +3,7 @@ import { Box, Text, useInput, useApp, useStdin } from 'ink';
 import { handleSlashCommand, getSystemPrompt, isCompactMode } from './commands.js';
 import { Agent } from '../agent/index.js';
 import { registerAllTools } from '../agent/tools.js';
+import { saveConfig } from '../utils/config.js';
 
 const CYAN = '#00ABC2';
 const YELLOW = '#FFEC2D';
@@ -18,6 +19,8 @@ const SLASH_COMMANDS = [
   { cmd: '/qysqa', desc: 'Qysqasha rejim' },
   { cmd: '/tez', desc: 'Jyldam rejim' },
   { cmd: '/baptau', desc: 'Baptaulardy kórsetu' },
+  { cmd: '/provider', desc: 'Provaider tańdau (menú)' },
+  { cmd: '/model', desc: 'Model tańdau (menú)' },
   { cmd: '/qosu', desc: 'Jumys katalogyn qosu' },
   { cmd: '/agentter', desc: 'Agent basqaru' },
   { cmd: '/butaq', desc: 'Dialogty butaqttau' },
@@ -63,6 +66,7 @@ export default function App() {
   const [menuIndex, setMenuIndex] = useState(0);
   const [pastes, setPastes] = useState([]);
   const [cursorOn, setCursorOn] = useState(true);
+  const [picker, setPicker] = useState(null);
 
   useEffect(() => {
     const t = setInterval(() => setCursorOn(v => !v), 500);
@@ -95,6 +99,17 @@ export default function App() {
   useEffect(() => {
     refreshProvider();
   }, []);
+
+  function applyPickerSelection(pk, value) {
+    if (pk.type === 'provider') {
+      saveConfig({ provider: value });
+      setMessages(prev => [...prev, { role: 'system', content: ` Provaider tańdaldy: ${value}` }]);
+    } else if (pk.type === 'model') {
+      saveConfig({ [`${pk.provider}.model`]: value });
+      setMessages(prev => [...prev, { role: 'system', content: ` Model tańdaldy: ${value}` }]);
+    }
+    refreshProvider();
+  }
 
   // === RAW STDIN PASTE INTERCEPTION ===
   useEffect(() => {
@@ -171,6 +186,29 @@ export default function App() {
 
     // Skip if currently pasting
     if (isPasting.current) return;
+
+    // Picker mode (provider/model)
+    if (picker) {
+      if (key.upArrow) {
+        setPicker(p => ({ ...p, index: Math.max(0, p.index - 1) }));
+        return;
+      }
+      if (key.downArrow) {
+        setPicker(p => ({ ...p, index: Math.min(p.items.length - 1, p.index + 1) }));
+        return;
+      }
+      if (key.return) {
+        const item = picker.items[picker.index];
+        if (item) applyPickerSelection(picker, item.value);
+        setPicker(null);
+        return;
+      }
+      if (key.escape) {
+        setPicker(null);
+        return;
+      }
+      return;
+    }
 
     // Menu navigation
     if (showMenu && filteredCmds.length > 0) {
@@ -259,7 +297,9 @@ export default function App() {
       });
 
       if (result.handled) {
-        if (result.message) {
+        if (result.picker) {
+          setPicker({ ...result.picker, index: 0 });
+        } else if (result.message) {
           setMessages(prev => [...prev, { role: 'system', content: result.message }]);
         }
         await refreshProvider();
@@ -367,6 +407,23 @@ export default function App() {
                 )
               )
             )
+          )
+        )
+      : null,
+
+    // Provider/model picker
+    picker
+      ? React.createElement(Box, { flexDirection: 'column', paddingX: 1, paddingBottom: 0 },
+          React.createElement(Box, { flexDirection: 'column', borderStyle: 'round', borderColor: YELLOW, paddingX: 1 },
+            React.createElement(Text, { color: YELLOW, bold: true }, picker.title),
+            ...picker.items.map((item, i) =>
+              React.createElement(Text, {
+                key: item.value,
+                color: i === picker.index ? CYAN : GRAY,
+                bold: i === picker.index,
+              }, `${i === picker.index ? '▸ ' : '  '}${item.label}${item.hint ? '  — ' + item.hint : ''}`)
+            ),
+            React.createElement(Text, { dimColor: true }, '↑↓ — tańdaý | Enter — saqtau | ESC — bas tartý')
           )
         )
       : null,
