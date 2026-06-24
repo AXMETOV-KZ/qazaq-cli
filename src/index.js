@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('qazaq')
   .description('Qazaq CLI — файлдарға қол жетімді AI-көмекші')
-  .version('1.1.0');
+  .version('1.3.0');
 
 // === TUI режимі ===
 program
