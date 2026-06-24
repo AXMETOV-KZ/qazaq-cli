@@ -1,6 +1,6 @@
 {
   "name": "qazaq-cli",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Qazaq CLI — AI agent with TUI chat, web search, shell execution, file operations, and 15 slash commands",
   "main": "src/index.js",
   "bin": {
@@ -15,7 +15,9 @@
     "ai",
     "agent",
     "qazaq",
-    "mimo",
+    "openai",
+    "openrouter",
+    "llm",
     "tui",
     "chat",
     "code",
