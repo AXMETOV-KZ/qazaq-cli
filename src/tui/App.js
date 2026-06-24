@@ -106,6 +106,11 @@ export default function App() {
       // Skip single chars — let useInput handle them
       if (str.length <= 1) return;
 
+      // Стрелки / навигация / F-клавиши приходят многобайтовым куском,
+      // начинающимся с ESC. Это НЕ вставка — пусть useInput сам разбирает.
+      const isBracketedPaste = str.includes('\x1b[200~');
+      if (!isBracketedPaste && str.charCodeAt(0) === 0x1b) return;
+
       // Multi-char = paste operation
       isPasting.current = true;
       pasteBuffer.current += str;
@@ -136,6 +141,7 @@ export default function App() {
     const clean = buf
       .replace(/\x1b\[200~/g, '')
       .replace(/\x1b\[201~/g, '')
+      .replace(/\x1b\[[0-9;]*[A-Za-z~]/g, '') // CSI-последовательности (стрелки и т.п.)
       .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
 
     if (!clean) return;
@@ -372,7 +378,7 @@ export default function App() {
       input.length > 0
         ? React.createElement(Text, null, displayInput)
         : React.createElement(Text, { dimColor: true }, 'terý...'),
-      React.createElement(Text, { color: YELLOW }, cursorOn ? '▋' : ' ')
+      React.createElement(Text, { color: YELLOW }, cursorOn ? '█' : ' ')
     ),
     React.createElement(Box, { borderStyle: 'single', borderBottom: false, borderTop: true, borderLeft: false, borderRight: false, borderColor: YELLOW, marginBottom: 1 })
   );
