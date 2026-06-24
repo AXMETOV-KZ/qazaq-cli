@@ -2,7 +2,7 @@ import { readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig, saveConfig } from '../utils/config.js';
-import { listProviders, listModels, getActiveProviderId } from '../providers/index.js';
+import { listProviders } from '../providers/index.js';
 
 // Рабочий каталог (можно расширять через /qosu)
 let workingDirs = [process.cwd()];
@@ -182,14 +182,13 @@ function cmdBaptau(args) {
   return { handled: true, message: `  Saqtaldy: ${key} = ${value}`, skipAI: true };
 }
 
-// === /provider — Provaiderdi tańdau (menú) ===
+// === /provider — Provaiderdi tańdau (tek provaiderler) ===
 function cmdProvider() {
   const cfg = loadConfig();
   const active = cfg.provider || 'openai';
   const items = listProviders().map(p => ({
     label: `${p.name}${p.id === active ? '  ✓' : ''}`,
     value: p.id,
-    hint: p.defaultModel || '',
   }));
   return {
     handled: true,
@@ -198,29 +197,9 @@ function cmdProvider() {
   };
 }
 
-// === /model — Provaider modelin tańdau (menú) ===
+// === /model — Aǵymdaǵy provaider modelderin tańdau (jandy tizim) ===
 function cmdModel() {
-  const id = getActiveProviderId();
-  const cfg = loadConfig();
-  const activeModel = cfg[`${id}.model`] || '';
-  const models = listModels(id);
-  if (models.length === 0) {
-    return {
-      handled: true,
-      skipAI: true,
-      message: ` "${id}" ushın model tizimi joq. Qoldaný: /baptau ${id}.model=...`,
-    };
-  }
-  const items = models.map(m => ({
-    label: `${m}${m === activeModel ? '  ✓' : ''}`,
-    value: m,
-    hint: '',
-  }));
-  return {
-    handled: true,
-    skipAI: true,
-    picker: { type: 'model', provider: id, title: ` Model tańda (${id}):`, items },
-  };
+  return { handled: true, skipAI: true, openModelPicker: true };
 }
 
 // === /qosu — Jumys katalogyn qosu ===

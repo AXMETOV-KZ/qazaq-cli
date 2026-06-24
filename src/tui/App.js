@@ -3,7 +3,8 @@ import { Box, Text, useInput, useApp, useStdin } from 'ink';
 import { handleSlashCommand, getSystemPrompt, isCompactMode } from './commands.js';
 import { Agent } from '../agent/index.js';
 import { registerAllTools } from '../agent/tools.js';
-import { saveConfig } from '../utils/config.js';
+import { saveConfig, loadConfig } from '../utils/config.js';
+import { PROVIDERS } from '../providers/registry.js';
 
 const CYAN = '#00ABC2';
 const YELLOW = '#FFEC2D';
@@ -67,6 +68,7 @@ export default function App() {
   const [pastes, setPastes] = useState([]);
   const [cursorOn, setCursorOn] = useState(true);
   const [picker, setPicker] = useState(null);
+  const [connect, setConnect] = useState(null);
 
   useEffect(() => {
     const t = setInterval(() => setCursorOn(v => !v), 500);
@@ -100,15 +102,66 @@ export default function App() {
     refreshProvider();
   }, []);
 
+  function openConnectForm(providerId) {
+    const preset = PROVIDERS[providerId] || {};
+    const cfg = loadConfig();
+    saveConfig({ provider: providerId });
+    setConnect({
+      provider: providerId,
+      name: preset.name || providerId,
+      baseURL: cfg[`${providerId}.baseURL`] || preset.baseURL || '',
+      apiKey: cfg[`${providerId}.apiKey`] || '',
+      focus: 'apiKey',
+      keyOptional: !!preset.keyOptional,
+    });
+  }
+
   function applyPickerSelection(pk, value) {
     if (pk.type === 'provider') {
-      saveConfig({ provider: value });
-      setMessages(prev => [...prev, { role: 'system', content: ` Provaider tańdaldy: ${value}` }]);
-    } else if (pk.type === 'model') {
+      setPicker(null);
+      openConnectForm(value);
+      return;
+    }
+    if (pk.type === 'model') {
       saveConfig({ [`${pk.provider}.model`]: value });
       setMessages(prev => [...prev, { role: 'system', content: ` Model tańdaldy: ${value}` }]);
+      refreshProvider();
     }
-    refreshProvider();
+  }
+
+  async function confirmConnect() {
+    const c = connect;
+    if (!c) return;
+    const updates = { provider: c.provider };
+    if (c.baseURL) updates[`${c.provider}.baseURL`] = c.baseURL;
+    if (c.apiKey) updates[`${c.provider}.apiKey`] = c.apiKey;
+    saveConfig(updates);
+    setConnect(null);
+    setMessages(prev => [...prev, { role: 'system', content: ` ${c.name} qosyldy. Modelder júktelude...` }]);
+    await refreshProvider();
+    await openModelPicker(c.provider);
+  }
+
+  async function openModelPicker(providerId) {
+    const { fetchModels, getActiveProviderId } = await import('../providers/index.js');
+    const id = providerId || getActiveProviderId();
+    const cfg = loadConfig();
+    const activeModel = cfg[`${id}.model`] || '';
+    setPicker({
+      type: 'model', provider: id,
+      title: ` Model júktelude (${id})...`,
+      items: [{ label: ' ⏳ kúte turyńyz...', value: '__loading__' }],
+      index: 0, loading: true,
+    });
+    let models = [];
+    try { models = await fetchModels(id); } catch { models = []; }
+    if (!models.length) {
+      setMessages(prev => [...prev, { role: 'system', content: ` Modelder tabylmady. /baptau ${id}.model=... arqyly qosyńyz.` }]);
+      setPicker(null);
+      return;
+    }
+    const items = models.map(m => ({ label: `${m}${m === activeModel ? '  ✓' : ''}`, value: m }));
+    setPicker({ type: 'model', provider: id, title: ` Model tańda (${id}):`, items, index: 0 });
   }
 
   // === RAW STDIN PASTE INTERCEPTION ===
@@ -187,6 +240,25 @@ export default function App() {
     // Skip if currently pasting
     if (isPasting.current) return;
 
+    // Connect form (token + baseURL)
+    if (connect) {
+      if (key.escape) { setConnect(null); return; }
+      if (key.tab) {
+        setConnect(c => ({ ...c, focus: c.focus === 'apiKey' ? 'baseURL' : 'apiKey' }));
+        return;
+      }
+      if (key.return) { confirmConnect(); return; }
+      if (key.backspace || key.delete) {
+        setConnect(c => ({ ...c, [c.focus]: String(c[c.focus] || '').slice(0, -1) }));
+        return;
+      }
+      if (key.ctrl || key.meta) return;
+      if (inputChar && !/[\x00-\x1f\x7f]/.test(inputChar)) {
+        setConnect(c => ({ ...c, [c.focus]: String(c[c.focus] || '') + inputChar }));
+      }
+      return;
+    }
+
     // Picker mode (provider/model)
     if (picker) {
       if (key.upArrow) {
@@ -198,9 +270,10 @@ export default function App() {
         return;
       }
       if (key.return) {
+        if (picker.loading) return;
         const item = picker.items[picker.index];
-        if (item) applyPickerSelection(picker, item.value);
-        setPicker(null);
+        if (item && item.value !== '__loading__') applyPickerSelection(picker, item.value);
+        else setPicker(null);
         return;
       }
       if (key.escape) {
@@ -299,6 +372,8 @@ export default function App() {
       if (result.handled) {
         if (result.picker) {
           setPicker({ ...result.picker, index: 0 });
+        } else if (result.openModelPicker) {
+          await openModelPicker();
         } else if (result.message) {
           setMessages(prev => [...prev, { role: 'system', content: result.message }]);
         }
@@ -411,21 +486,42 @@ export default function App() {
         )
       : null,
 
-    // Provider/model picker
-    picker
+    // Connect form (token + baseURL)
+    connect
       ? React.createElement(Box, { flexDirection: 'column', paddingX: 1, paddingBottom: 0 },
           React.createElement(Box, { flexDirection: 'column', borderStyle: 'round', borderColor: YELLOW, paddingX: 1 },
-            React.createElement(Text, { color: YELLOW, bold: true }, picker.title),
-            ...picker.items.map((item, i) =>
-              React.createElement(Text, {
-                key: item.value,
-                color: i === picker.index ? CYAN : GRAY,
-                bold: i === picker.index,
-              }, `${i === picker.index ? '▸ ' : '  '}${item.label}${item.hint ? '  — ' + item.hint : ''}`)
-            ),
-            React.createElement(Text, { dimColor: true }, '↑↓ — tańdaý | Enter — saqtau | ESC — bas tartý')
+            React.createElement(Text, { color: YELLOW, bold: true }, ` ${connect.name} — qosylý`),
+            React.createElement(Text, { color: connect.focus === 'baseURL' ? CYAN : GRAY },
+              `${connect.focus === 'baseURL' ? '▸ ' : '  '}Base URL: ${connect.baseURL || '(bos)'}`),
+            React.createElement(Text, { color: connect.focus === 'apiKey' ? CYAN : GRAY },
+              `${connect.focus === 'apiKey' ? '▸ ' : '  '}API kilt: ${connect.apiKey ? '*'.repeat(Math.min(connect.apiKey.length, 24)) : (connect.keyOptional ? '(qajet emes)' : '(bos)')}`),
+            React.createElement(Text, { dimColor: true }, 'Tab — órіs auystyrý | Enter — saqtau & jalǵastyrý | ESC — bas tartý')
           )
         )
+      : null,
+
+    // Provider/model picker (terezeli)
+    picker
+      ? (() => {
+          const WINDOW = 10;
+          const total = picker.items.length;
+          const start = Math.max(0, Math.min(picker.index - Math.floor(WINDOW / 2), Math.max(0, total - WINDOW)));
+          const visible = picker.items.slice(start, start + WINDOW);
+          return React.createElement(Box, { flexDirection: 'column', paddingX: 1, paddingBottom: 0 },
+            React.createElement(Box, { flexDirection: 'column', borderStyle: 'round', borderColor: YELLOW, paddingX: 1 },
+              React.createElement(Text, { color: YELLOW, bold: true }, `${picker.title}  (${total ? picker.index + 1 : 0}/${total})`),
+              ...visible.map((item, vi) => {
+                const i = start + vi;
+                return React.createElement(Text, {
+                  key: item.value + i,
+                  color: i === picker.index ? CYAN : GRAY,
+                  bold: i === picker.index,
+                }, `${i === picker.index ? '▸ ' : '  '}${item.label}`);
+              }),
+              React.createElement(Text, { dimColor: true }, '↑↓ — tańdaý | Enter — saqtau | ESC — bas tartý')
+            )
+          );
+        })()
       : null,
 
     // Input field
