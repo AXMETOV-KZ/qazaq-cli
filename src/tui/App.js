@@ -203,7 +203,8 @@ export default function App() {
       return;
     }
 
-    // Arrows
+    // Arrows (outside menu — move cursor or ignore)
+    if (key.upArrow || key.downArrow) return;
     if (key.leftArrow) {
       setCursorPos(prev => Math.max(0, prev - 1));
       return;
@@ -219,11 +220,11 @@ export default function App() {
       return;
     }
 
-    // Skip Ctrl combos
+    // Skip Ctrl/meta combos
     if (key.ctrl || key.meta) return;
 
-    // Normal char
-    if (inputChar) {
+    // Normal printable char (filter control sequences like ESC[B from arrow keys)
+    if (inputChar && !/[\x00-\x1f\x7f]/.test(inputChar)) {
       setInput(prev => prev.slice(0, cursorPos) + inputChar + prev.slice(cursorPos));
       setCursorPos(prev => prev + 1);
       setMenuIndex(0);
@@ -316,7 +317,7 @@ export default function App() {
           )
       ),
       React.createElement(Box, { marginTop: 0 },
-        React.createElement(Text, { dimColor: true }, 'ESC — shuǵy | Enter — jiberu | / — komandalar')
+        React.createElement(Text, { dimColor: true }, 'ESC — shygu | Enter — tańdau | / — pärmender')
       )
     ),
 
