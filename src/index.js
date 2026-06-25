@@ -121,4 +121,23 @@ program
     await configCommand(options);
   });
 
+// === Jaña nusqany tekserý ===
+program
+  .command('update')
+  .description('Jaña nusqany tekserý (npm)')
+  .action(async () => {
+    const { checkForUpdate } = await import('./utils/update.js');
+    const r = await checkForUpdate();
+    if (r.error) {
+      console.log(chalk.gray(` Teksere almadyq: ${r.error}`));
+      return;
+    }
+    if (r.hasUpdate) {
+      console.log(chalk.yellow(` Jaña nusqa bar: ${r.current} → ${r.latest}`));
+      console.log(chalk.cyan(' Jańartý: npm install -g qazaq-cli'));
+    } else {
+      console.log(chalk.green(` Eń soñǵy nusqa ornatylǵan (${r.current}).`));
+    }
+  });
+
 program.parse();
