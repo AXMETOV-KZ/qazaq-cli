@@ -273,7 +273,7 @@ export default function App() {
         if (picker.loading) return;
         const item = picker.items[picker.index];
         if (item && item.value !== '__loading__') applyPickerSelection(picker, item.value);
-        else setPicker(null);
+        setPicker(null);
         return;
       }
       if (key.escape) {
