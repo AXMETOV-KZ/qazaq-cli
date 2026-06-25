@@ -26,12 +26,13 @@ EREJELER:
 Jauabyndy Kazakh Latin tilinde ber. Emoji koldan.`;
 
 export class Agent {
-  constructor({ client, model, onToolStart, onToolEnd, onMessage, maxIterations = 15 }) {
+  constructor({ client, model, onToolStart, onToolEnd, onMessage, onToken, maxIterations = 15 }) {
     this.client = client;
     this.model = model;
     this.onToolStart = onToolStart || (() => {});
     this.onToolEnd = onToolEnd || (() => {});
     this.onMessage = onMessage || (() => {});
+    this.onToken = onToken || (() => {});
     this.maxIterations = maxIterations;
   }
 
@@ -62,8 +63,38 @@ export class Agent {
           params.tool_choice = 'auto';
         }
 
-        const response = await this.client.chat.completions.create(params);
-        const msg = response.choices[0]?.message;
+        let msg;
+        try {
+          // Streaming: жauapty token-token jíberemiz
+          const stream = await this.client.chat.completions.create({ ...params, stream: true });
+          let content = '';
+          const toolAcc = [];
+          for await (const chunk of stream) {
+            const choice = chunk.choices?.[0];
+            if (!choice) continue;
+            const delta = choice.delta || {};
+            if (delta.content) {
+              content += delta.content;
+              this.onToken(delta.content);
+            }
+            if (delta.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                const i = tc.index ?? 0;
+                if (!toolAcc[i]) toolAcc[i] = { id: '', type: 'function', function: { name: '', arguments: '' } };
+                if (tc.id) toolAcc[i].id = tc.id;
+                if (tc.function?.name) toolAcc[i].function.name += tc.function.name;
+                if (tc.function?.arguments) toolAcc[i].function.arguments += tc.function.arguments;
+              }
+            }
+          }
+          msg = { role: 'assistant', content: content || null };
+          const calls = toolAcc.filter(Boolean);
+          if (calls.length) msg.tool_calls = calls;
+        } catch (streamErr) {
+          // Provaider streaming qoldamasa — ádettegі shaqyru
+          const response = await this.client.chat.completions.create(params);
+          msg = response.choices[0]?.message;
+        }
 
         if (!msg) {
           return { answer: 'Jauap joq', iterations };

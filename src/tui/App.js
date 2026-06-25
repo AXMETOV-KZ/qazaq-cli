@@ -425,6 +425,17 @@ export default function App() {
         model: info.defaultModel,
         onToolStart: () => {},
         onToolEnd: () => {},
+        onToken: (t) => {
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'assistant' && last.streaming) {
+              const updated = prev.slice();
+              updated[updated.length - 1] = { ...last, content: last.content + t };
+              return updated;
+            }
+            return [...prev, { role: 'assistant', content: t, streaming: true }];
+          });
+        },
         maxIterations: 15,
       });
 
@@ -432,8 +443,16 @@ export default function App() {
         m.role === 'user' || m.role === 'assistant' || m.role === 'system'
       );
 
-      const { answer, iterations } = await agent.run(text, cleanHistory);
-      setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
+      const { answer } = await agent.run(text, cleanHistory);
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.role === 'assistant' && last.streaming) {
+          const updated = prev.slice();
+          updated[updated.length - 1] = { role: 'assistant', content: answer };
+          return updated;
+        }
+        return [...prev, { role: 'assistant', content: answer }];
+      });
     } catch (error) {
       setMessages(prev => [...prev, { role: 'error', content: friendlyError(error) }]);
     }
