@@ -12,6 +12,22 @@ const GRAY = '#888888';
 const GREEN = '#50FA7B';
 const RED = '#FF5555';
 
+function friendlyError(error) {
+	const msg = String(error?.message || error || '');
+	const status = error?.status || error?.response?.status;
+	if (status === 401 || /unauthorized|invalid api key|incorrect api key/i.test(msg))
+		return ' API kilt qate nemese joq. /provider arqyly kilt engiziniz.';
+	if (status === 429 || /rate limit|quota|too many requests/i.test(msg))
+		return ' Suranystar limiti toldy. Biraz kúte turyp qaytalańyz.';
+	if (status === 404 || /model.*not found|does not exist|no such model/i.test(msg))
+		return ' Tańdalǵan model tabylmady. /model arqyly basqa model tańdańyz.';
+	if (/ENOTFOUND|ETIMEDOUT|ECONNREFUSED|fetch failed|network|getaddrinfo/i.test(msg))
+		return ' Internet baylanysy joq nemese server jauap bermedi. Baylanysty tekseriniz.';
+	if (status >= 500 || /internal server error|bad gateway|service unavailable/i.test(msg))
+		return ' Provaider serverinde qate. Birazdan keyin qaytalańyz.';
+	return ` Qate: ${msg}`;
+}
+
 registerAllTools();
 
 const SLASH_COMMANDS = [
@@ -99,7 +115,18 @@ export default function App() {
   }
 
   useEffect(() => {
-    refreshProvider();
+    (async () => {
+      await refreshProvider();
+      const { getActiveProviderId } = await import('../providers/index.js');
+      const id = getActiveProviderId();
+      const preset = PROVIDERS[id] || {};
+      const cfg = loadConfig();
+      const hasKey =
+        cfg[`${id}.apiKey`] ||
+        (preset.envKey && process.env[preset.envKey]) ||
+        preset.keyOptional;
+      if (!hasKey) openConnectForm(id);
+    })();
   }, []);
 
   function openConnectForm(providerId) {
@@ -408,7 +435,7 @@ export default function App() {
       const { answer, iterations } = await agent.run(text, cleanHistory);
       setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'error', content: error.message }]);
+      setMessages(prev => [...prev, { role: 'error', content: friendlyError(error) }]);
     }
 
     setIsLoading(false);
