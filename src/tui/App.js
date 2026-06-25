@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text, useInput, useApp, useStdin } from 'ink';
 import { handleSlashCommand, getSystemPrompt, isCompactMode } from './commands.js';
+import { MarkdownText } from './markdown.js';
 import { Agent } from '../agent/index.js';
 import { registerAllTools } from '../agent/tools.js';
 import { saveConfig, loadConfig } from '../utils/config.js';
@@ -521,7 +522,9 @@ export default function App() {
                 ? React.createElement(Text, { color: RED }, `  ✖ ${msg.content}`)
                 : msg.role === 'system'
                   ? React.createElement(Text, { color: YELLOW }, msg.content)
-                  : React.createElement(Text, null, `  ${msg.content}`)
+                  : React.createElement(Box, { paddingLeft: 1 },
+                      React.createElement(MarkdownText, { content: msg.content })
+                    )
           )
         ),
       isLoading
