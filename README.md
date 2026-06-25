@@ -1,5 +1,7 @@
 # Qazaq CLI
 
+![CI](https://github.com/AXMETOV-KZ/qazaq-cli/actions/workflows/ci.yml/badge.svg)
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/AXMETOV-KZ/qazaq-cli/main/docs/screenshot.png" alt="Qazaq CLI — TUI" width="800">
 </p>

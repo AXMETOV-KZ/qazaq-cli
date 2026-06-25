@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node bin/index.js",
-    "tui": "node bin/index.js tui"
+    "tui": "node bin/index.js tui",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "cli",
@@ -53,5 +55,8 @@
     "openai": "^6.38.0",
     "ora": "^9.4.0",
     "react": "^19.2.6"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
   }
 }
