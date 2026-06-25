@@ -124,7 +124,6 @@ export default function App() {
     }
     if (pk.type === 'model') {
       saveConfig({ [`${pk.provider}.model`]: value });
-      setMessages(prev => [...prev, { role: 'system', content: ` Model tańdaldy: ${value}` }]);
       refreshProvider();
     }
   }
