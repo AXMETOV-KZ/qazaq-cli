@@ -84,6 +84,7 @@ export default function App() {
   const [pastes, setPastes] = useState([]);
   const [cursorOn, setCursorOn] = useState(true);
   const [picker, setPicker] = useState(null);
+  const [pickerQuery, setPickerQuery] = useState('');
   const [connect, setConnect] = useState(null);
 
   useEffect(() => {
@@ -188,6 +189,7 @@ export default function App() {
     }
     const items = models.map(m => ({ label: `${m}${m === activeModel ? '  ✓' : ''}`, value: m }));
     setPicker({ type: 'model', provider: id, title: ` Model tańda (${id}):`, items, index: 0 });
+    setPickerQuery('');
   }
 
   // === RAW STDIN PASTE INTERCEPTION ===
@@ -287,23 +289,33 @@ export default function App() {
 
     // Picker mode (provider/model)
     if (picker) {
-      if (key.upArrow) {
-        setPicker(p => ({ ...p, index: Math.max(0, p.index - 1) }));
-        return;
-      }
-      if (key.downArrow) {
-        setPicker(p => ({ ...p, index: Math.min(p.items.length - 1, p.index + 1) }));
-        return;
-      }
+      const pickerItems = picker?.items || [];
+      const filteredItems = pickerQuery
+        ? pickerItems.filter(it =>
+          (it.label || it.value || '').toLowerCase().includes(pickerQuery.toLowerCase()))
+        : pickerItems;
+
+      if (key.escape) { setPicker(null); setPickerQuery(''); return; }
+
+      if (key.upArrow) { setPicker(p => ({ ...p, index: Math.max(0, (p.index ?? 0) - 1) })); return; }
+      if (key.downArrow) { setPicker(p => ({ ...p, index: Math.min(filteredItems.length - 1, (p.index ?? 0) + 1) })); return; }
+
       if (key.return) {
-        if (picker.loading) return;
-        const item = picker.items[picker.index];
+        const item = filteredItems[picker.index ?? 0];
         if (item && item.value !== '__loading__') applyPickerSelection(picker, item.value);
         setPicker(null);
+        setPickerQuery('');
         return;
       }
-      if (key.escape) {
-        setPicker(null);
+
+      if (key.backspace || key.delete) {
+        setPickerQuery(q => q.slice(0, -1));
+        setPicker(p => ({ ...p, index: 0 }));
+        return;
+      }
+      if (inputChar && !key.ctrl && !key.meta && !/[\x00-\x1f\x7f]/.test(inputChar)) {
+        setPickerQuery(q => q + inputChar);
+        setPicker(p => ({ ...p, index: 0 }));
         return;
       }
       return;
@@ -398,6 +410,7 @@ export default function App() {
       if (result.handled) {
         if (result.picker) {
           setPicker({ ...result.picker, index: 0 });
+          setPickerQuery('');
         } else if (result.openModelPicker) {
           await openModelPicker();
         } else if (result.message) {
@@ -549,12 +562,18 @@ export default function App() {
     picker
       ? (() => {
           const WINDOW = 10;
-          const total = picker.items.length;
+          const pickerItems = picker?.items || [];
+          const filteredItems = pickerQuery
+            ? pickerItems.filter(it =>
+              (it.label || it.value || '').toLowerCase().includes(pickerQuery.toLowerCase()))
+            : pickerItems;
+          const total = filteredItems.length;
           const start = Math.max(0, Math.min(picker.index - Math.floor(WINDOW / 2), Math.max(0, total - WINDOW)));
-          const visible = picker.items.slice(start, start + WINDOW);
+          const visible = filteredItems.slice(start, start + WINDOW);
           return React.createElement(Box, { flexDirection: 'column', paddingX: 1, paddingBottom: 0 },
             React.createElement(Box, { flexDirection: 'column', borderStyle: 'round', borderColor: YELLOW, paddingX: 1 },
               React.createElement(Text, { color: YELLOW, bold: true }, `${picker.title}  (${total ? picker.index + 1 : 0}/${total})`),
+              React.createElement(Text, { color: YELLOW }, ` Izdew: ${pickerQuery || ''}▏`),
               ...visible.map((item, vi) => {
                 const i = start + vi;
                 return React.createElement(Text, {
@@ -563,7 +582,9 @@ export default function App() {
                   bold: i === picker.index,
                 }, `${i === picker.index ? '▸ ' : '  '}${item.label}`);
               }),
-              React.createElement(Text, { dimColor: true }, '↑↓ — tańdaý | Enter — saqtau | ESC — bas tartý')
+              filteredItems.length === 0 &&
+                React.createElement(Text, { color: GRAY }, ' Eshteńe tabylmady'),
+              React.createElement(Text, { dimColor: true }, '↑↓ — tańdaý | teru — izdew | Enter — saqtau | ESC — bas tartý')
             )
           );
         })()
