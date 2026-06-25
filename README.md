@@ -1,7 +1,7 @@
 # Qazaq CLI
 
 <p align="center">
-<img src="docs/screenshot.png" alt="Qazaq CLI — TUI" width="800">
+<img src="https://raw.githubusercontent.com/AXMETOV-KZ/qazaq-cli/main/docs/screenshot.png" alt="Qazaq CLI — TUI" width="800">
 </p>
 
 [![npm version](https://img.shields.io/npm/v/qazaq-cli.svg)](https://www.npmjs.com/package/qazaq-cli)
