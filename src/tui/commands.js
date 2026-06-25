@@ -3,6 +3,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig, saveConfig } from '../utils/config.js';
 import { listProviders } from '../providers/index.js';
+import { listSessions } from '../utils/sessions.js';
 
 // Рабочий каталог (можно расширять через /qosu)
 let workingDirs = [process.cwd()];
@@ -39,6 +40,9 @@ export async function handleSlashCommand(input, context) {
 
     case '/tazala':
       return cmdTazala(context);
+
+    case '/sessiya':
+      return cmdSessiya();
 
     case '/qysqa':
       return cmdQysqa();
@@ -103,6 +107,7 @@ function cmdKomek() {
     '',
     '  /komek       Komandalar tizimi',
     '  /tazala      Sessiyani tazalau',
+    '  /sessiya     Saqtalǵan sessiyany jalǵastyrý',
     '  /qysqa       Qysqasha rejim (AI jauap qysqartý)',
     '  /tez         Jyldam rejim',
     '  /baptau      Baptaulardy kórsetu / ózgertu',
@@ -132,6 +137,23 @@ function cmdTazala(context) {
     context.clearMessages();
   }
   return { handled: true, message: '  Sessiya tazaldy. Jana dialog bastauǵa bolady.', skipAI: true };
+}
+
+// === /sessiya — Saqtalǵan sessiyany jalǵastyrý ===
+function cmdSessiya() {
+  const sessions = listSessions();
+  if (sessions.length === 0) {
+    return { handled: true, message: ' Saqtalǵan sessiyalar joq.', skipAI: true };
+  }
+  const items = sessions.map(s => ({
+    label: `${s.title}  (${s.count} xabar · ${(s.savedAt || '').slice(0, 16).replace('T', ' ')})`,
+    value: s.id,
+  }));
+  return {
+    handled: true,
+    skipAI: true,
+    picker: { type: 'session', title: ' Sessiyany jalǵastyrý:', items },
+  };
 }
 
 // === /qysqa — Qysqasha rejim ===
