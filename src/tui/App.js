@@ -5,6 +5,7 @@ import { MarkdownText } from './markdown.js';
 import { Agent } from '../agent/index.js';
 import { registerAllTools } from '../agent/tools.js';
 import { saveConfig, loadConfig } from '../utils/config.js';
+import { newSessionId, saveSession, loadSession } from '../utils/sessions.js';
 import { PROVIDERS } from '../providers/registry.js';
 
 const CYAN = '#00ABC2';
@@ -34,6 +35,7 @@ registerAllTools();
 const SLASH_COMMANDS = [
   { cmd: '/komek', desc: 'Komandalar tizimi' },
   { cmd: '/tazala', desc: 'Sessiyani tazalau' },
+  { cmd: '/sessiya', desc: 'Saqtalǵan sessiyany jalǵastyrý' },
   { cmd: '/qysqa', desc: 'Qysqasha rejim' },
   { cmd: '/tez', desc: 'Jyldam rejim' },
   { cmd: '/baptau', desc: 'Baptaulardy kórsetu' },
@@ -98,6 +100,7 @@ export default function App() {
   const pasteTimer = useRef(null);
   const isPasting = useRef(false);
   const pasteCounter = useRef(0);
+  const sessionId = useRef(newSessionId());
 
   const showMenu = input.startsWith('/') && !input.includes(' ');
   const filteredCmds = showMenu
@@ -146,6 +149,12 @@ export default function App() {
   }
 
   function applyPickerSelection(pk, value) {
+    if (pk.type === 'session') {
+      const msgs = loadSession(value);
+      if (msgs) { sessionId.current = value; setMessages(msgs); }
+      setPicker(null);
+      return;
+    }
     if (pk.type === 'provider') {
       setPicker(null);
       openConnectForm(value);
@@ -192,6 +201,13 @@ export default function App() {
     setPicker({ type: 'model', provider: id, title: ` Model tańda (${id}):`, items, index: 0 });
     setPickerQuery('');
   }
+
+  // Auto-save session
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading) {
+      saveSession(sessionId.current, messages);
+    }
+  }, [messages, isLoading]);
 
   // === RAW STDIN PASTE INTERCEPTION ===
   useEffect(() => {
@@ -405,7 +421,7 @@ export default function App() {
     if (text.startsWith('/')) {
       const result = await handleSlashCommand(text, {
         messages,
-        clearMessages: () => setMessages([]),
+        clearMessages: () => { setMessages([]); sessionId.current = newSessionId(); },
       });
 
       if (result.handled) {
