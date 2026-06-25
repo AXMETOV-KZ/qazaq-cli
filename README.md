@@ -10,6 +10,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 
+🙌 First time contributing? Check out [good first issues](https://github.com/AXMETOV-KZ/qazaq-cli/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+
 **Qazaq CLI** — AI agent with TUI chat, web search, shell execution, file operations, and 15 slash commands. Built with Node.js, Ink (React terminal UI), and OpenAI-compatible APIs.
 
 ## Features
